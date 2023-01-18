@@ -21,9 +21,11 @@ const swagger_1 = require("@nestjs/swagger");
 const client_1 = require("@prisma/client");
 const platform_express_1 = require("@nestjs/platform-express");
 const common_2 = require("@nestjs/common");
+const prisma_service_1 = require("../prisma/prisma.service");
 const allowedOrigins = ['http://localhost:3000', 'http://example.com'];
 let UserController = class UserController {
-    constructor(userService) {
+    constructor(prisma, userService) {
+        this.prisma = prisma;
         this.userService = userService;
     }
     signin(req) {
@@ -34,8 +36,21 @@ let UserController = class UserController {
         console.log("here");
         return this.userService.change_username(req.user_obj, new_username, res);
     }
-    add_friend(req, param, res) {
-        return this.userService.add_friend(req.user_obj, param.friend_name, res);
+    async add_friend(req, param, res) {
+        const new_user = await this.prisma.user.findUnique({
+            where: {
+                id: req.user_obj.id
+            },
+        });
+        return this.userService.add_friend(new_user, param.friend_name, res);
+    }
+    async get_which_one(req, param, res) {
+        const new_user = await this.prisma.user.findUnique({
+            where: {
+                id: req.user_obj.id
+            },
+        });
+        return this.userService.get_which_friend(new_user, param.whichone, res);
     }
     async upload(req, file) {
         let file_name = file.originalname;
@@ -45,7 +60,7 @@ let UserController = class UserController {
     get_username(req, res) {
         return this.userService.get_username(req.user_obj, res);
     }
-    get_user(req, res) {
+    get_user(query, req, res) {
         return this.userService.get_user_all(req.user_obj, res);
     }
     get_user_score(req, res) {
@@ -94,8 +109,18 @@ __decorate([
     __param(2, (0, common_1.Res)()),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [Object, Object, Object]),
-    __metadata("design:returntype", void 0)
+    __metadata("design:returntype", Promise)
 ], UserController.prototype, "add_friend", null);
+__decorate([
+    (0, common_1.UseGuards)(guard_1.JwtGuard),
+    (0, common_1.Get)('user/:whichone'),
+    __param(0, (0, common_1.Req)()),
+    __param(1, (0, common_1.Param)()),
+    __param(2, (0, common_1.Res)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object, Object, Object]),
+    __metadata("design:returntype", Promise)
+], UserController.prototype, "get_which_one", null);
 __decorate([
     (0, common_1.UseGuards)(guard_1.JwtGuard),
     (0, common_1.Post)('upload/'),
@@ -127,10 +152,11 @@ __decorate([
 __decorate([
     (0, common_1.UseGuards)(guard_1.JwtGuard),
     (0, common_1.Get)('user'),
-    __param(0, (0, common_1.Req)()),
-    __param(1, (0, common_1.Res)()),
+    __param(0, (0, common_1.Query)()),
+    __param(1, (0, common_1.Req)()),
+    __param(2, (0, common_1.Res)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [Object, Object]),
+    __metadata("design:paramtypes", [Object, Object, Object]),
     __metadata("design:returntype", void 0)
 ], UserController.prototype, "get_user", null);
 __decorate([
@@ -190,7 +216,7 @@ UserController = __decorate([
     (0, swagger_1.ApiTags)('user'),
     (0, common_1.UseGuards)(guard_2.LocalAuthGuard),
     (0, common_1.Controller)('user'),
-    __metadata("design:paramtypes", [user_service_1.UserService])
+    __metadata("design:paramtypes", [prisma_service_1.PrismaService, user_service_1.UserService])
 ], UserController);
 exports.UserController = UserController;
 function Use(arg0) {

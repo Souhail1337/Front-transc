@@ -1,11 +1,26 @@
-import React from "react";
+import React, { useState } from "react";
+import imaage from "./42.png"
+import "./login.css"
 
 const Login = () => {
+    const [logged, setLogged] = useState(false);
+	const handlelogin = () =>{
 
+		window.location.replace("http://localhost:5000/auth/login");
+        setLogged(true);
+        if(logged)
+            console.log("ALEADY LOGGED IN ");
+        else
+            console.log("FIRST TIME HUH");
+	}
     return(
-        <>
-            <a href="https://api.intra.42.fr/oauth/authorize?client_id=u-s4t2ud-3456f615f72b01d8343af7dca0e97ee93a39ddcccbbf754dd828749d46bff59e&redirect_uri=http%3A%2F%2Flocalhost%3A5000%2Fauth%2Flogin&response_type=code"> Login </a>
-        </>
+        <div className="Login" >
+        <h1 className="LoginHeading">BGHITI T9SSR SIR LUM6P</h1>
+        <div className='Buttonin'>
+               <img className='imgs'  src={imaage} alt="pof" width={"19vw"} height={"19vh"}/>
+            <button onClick={handlelogin} className='input_submit' type='submit' >Continue with Intra </button>
+        </div>
+    </div>
     )
 }
 

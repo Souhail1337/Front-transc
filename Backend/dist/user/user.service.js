@@ -89,7 +89,22 @@ let UserService = class UserService {
                 id: user_obj.id,
             }
         });
+        console.log("ayoub dima khdam : " + user_obj.username);
         res.json(user);
+    }
+    async get_which_friend(req, which_friend, res) {
+        const userr = await this.prisma.user.findMany({});
+        let i = 0;
+        for (i = 0; i < userr.length; i++) {
+            if (userr[i].username === which_friend)
+                break;
+        }
+        if (i !== userr.length) {
+            res.json(userr[i]);
+        }
+        else {
+            throw new common_1.HttpException("Error: Username not found ", common_1.HttpStatus.BAD_REQUEST);
+        }
     }
     async update_user_score(user, score) {
         try {
@@ -317,6 +332,13 @@ __decorate([
     __metadata("design:returntype", Promise)
 ], UserService.prototype, "get_user_all", null);
 __decorate([
+    __param(0, (0, common_1.Req)()),
+    __param(2, (0, common_1.Res)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object, String, Object]),
+    __metadata("design:returntype", Promise)
+], UserService.prototype, "get_which_friend", null);
+__decorate([
     __param(1, (0, common_1.Res)()),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [dto_1.UserDto, Object]),
@@ -331,7 +353,7 @@ __decorate([
 __decorate([
     __param(2, (0, common_1.Res)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [dto_1.UserDto, String, Object]),
+    __metadata("design:paramtypes", [Object, String, Object]),
     __metadata("design:returntype", Promise)
 ], UserService.prototype, "add_friend", null);
 __decorate([

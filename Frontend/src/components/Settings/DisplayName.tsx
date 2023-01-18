@@ -18,9 +18,7 @@ const DisplayName = (props : any) => {
           //SetNewUsername(newUsername);
           // console.log(props);
          });
-
         console.log("okkkk");
-
     }
     const HandleFile = (event: any | null) =>{
       const file = event.target.files[0];
@@ -31,7 +29,10 @@ const DisplayName = (props : any) => {
             "Content-Type": "multipart/form-data",
           },
           withCredentials: true,
-        }).then((response)=>{});
+        }).then((response)=>{
+
+          props.setAvatar(formData);
+        });
     }
   
   return (

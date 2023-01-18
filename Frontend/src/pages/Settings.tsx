@@ -12,15 +12,16 @@ type DataType = {
   isTwoFactor: false;
 };
 
-const Settings = () => {
-  const [data, setData] = useState<DataType>();
-  const [isChecked, setIsChecked] = useState<boolean>(false);
+const Settings = ({ state }: { state: boolean }) => {
+  const [isChecked, setIsChecked] = useState<boolean>(state);
   const [twoFactorModal, setModal] = useState<boolean>(false);
 
     const [User, GetUser] = useState("")
     const [avatar, NewAvatar] = useState('');
     const handleModal = async () => {
+      console.log("sanfrasisco : " + isChecked);
       if (!isChecked) {
+        console.log("wash true or fals : " + twoFactorModal);
         setModal(true);
         return;}
       }
@@ -60,7 +61,7 @@ const Settings = () => {
         </div>
         {/* ------ top part ------- */}
         <div className="mt-[108px]">
-          <DisplayName setUser={GetUser}/>
+          <DisplayName setUser={GetUser} setAvatar={NewAvatar}/>
         </div>
         {/* ------ bottom part ------ */}
         <div className="mt-[144px] flex items-center gap-[44px]">

@@ -14,7 +14,6 @@ interface Props extends Interface{
 
 const TwoFactor: FC<Props>= ({isOpen, setIsOpen, contentLabel, setTwoFactor}) => {
   const [twoFactorModal, setModal] = useState<boolean>(false);
-
   const [openmodel, setopenmodel1] = useState(false);
   const [toggled, settoggled] = useState(false);
   const [isenable, isenable1] = useState(false);
@@ -22,12 +21,10 @@ const TwoFactor: FC<Props>= ({isOpen, setIsOpen, contentLabel, setTwoFactor}) =>
   const [code, setCode] = useState<string>("");
   const [image, setImage] = useState('');
       const [error, setError] = useState<string>("");
-
   useEffect(() =>
 {
   setCode("");
 },[isOpen]);
- 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => 
   {
     e.preventDefault();
@@ -42,6 +39,7 @@ const TwoFactor: FC<Props>= ({isOpen, setIsOpen, contentLabel, setTwoFactor}) =>
         if (statusCode === 200) {
           setTwoFactor(true);
           setIsOpen(false);
+          console.log("hahahahahahahahahahhahahaha");
           toast.success("Two factor authentication has been enabled");
           setError("");
         } else ;
@@ -59,7 +57,8 @@ const TwoFactor: FC<Props>= ({isOpen, setIsOpen, contentLabel, setTwoFactor}) =>
           </button>
           <div className="flex flex-col items-center gap-[22px]">
             <img 
-            src="http://localhost:5000/auth/login/2fa/enable" alt="2fa"
+            src="http://localhost:5000/auth/login/2fa/enable" 
+            alt="2fa"
             height={300}
             width={300}
             />
@@ -74,7 +73,7 @@ const TwoFactor: FC<Props>= ({isOpen, setIsOpen, contentLabel, setTwoFactor}) =>
                 placeholder="Enter Your Code"
                 onChange={(e)=> setCode(e.target.value)}
                 />
-              <button type="submit">ENable</button>
+              <button type="submit">Enable</button>
             </div>
           </div>
         </div>

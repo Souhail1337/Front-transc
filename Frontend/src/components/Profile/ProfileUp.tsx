@@ -1,28 +1,40 @@
 import axios from "axios";
 import React, { useContext, useEffect, useState } from "react";
+import { Navigate ,useNavigate} from 'react-router-dom'
 import { StringLiteral } from "typescript";
 import avatar1 from "../../Assets/Ellipse 213.png";
 import fireIcon from "../../Assets/fire.png";
 import {Usercontext} from "../../context/Usercontext"
 
 const ProfileUp = () => {
+  const navigate = useNavigate();
+
+  const shkon = window.location.pathname.split("/",3)[2];
+
+  console.log("HEHE"+ shkon);
+  let url:string ;
+  if (shkon)
+    url = "http://localhost:5000/user/user/" + shkon;
+  else
+    url = "http://localhost:5000/user/user"
+ 
   const [User, SetUser] = useState<any>({});
+  const [me, itsme] = useState(false);
+
   useEffect(() => {
-    axios.get('http://localhost:5000/user/user', {withCredentials: true})
+    axios.get(url, {withCredentials: true})
     .then((response) =>{
-      try{
+        console.log("nigga" + response.status)
         SetUser(response.data);
-      } catch(error)
-      {
-        console.log(error);
-      }
-      })
+      }).catch(error => 
+        {  
+          console.log("nigga" + error.response.status)
+          navigate("/errornotfound");
+        });
   },[])
 
 return (
   <div className="flex items-center justify-center gap-[120px]">
-
-    
     <div>
     <div className="flex items-center gap-[40px]">
       <div>

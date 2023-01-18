@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Post, Put, Param, Req, UseGuards, Res, UseInterceptors, UploadedFile, ParseFilePipeBuilder, HttpStatus, Patch } from '@nestjs/common';
+import { Body, Controller, Get, Post, Put, Param, Req, UseGuards, Res, UseInterceptors, UploadedFile, ParseFilePipeBuilder, HttpStatus, Patch, Query } from '@nestjs/common';
 import { FortyTwoGuard, JwtGuard } from 'src/auth/guard';
 import { LocalAuthGuard } from './guard';
 import { UserService } from './user.service';
@@ -6,7 +6,8 @@ import { ApiTags } from '@nestjs/swagger';
 import { UserStatus } from '@prisma/client';
 import { FileInterceptor } from '@nestjs/platform-express';
 import * as cors from 'cors';
-import { Header } from '@nestjs/common';
+import { Headers, Header } from '@nestjs/common';
+import { PrismaService } from 'src/prisma/prisma.service';
 
 const allowedOrigins = ['http://localhost:3000', 'http://example.com'];
 
@@ -14,7 +15,7 @@ const allowedOrigins = ['http://localhost:3000', 'http://example.com'];
 @UseGuards(LocalAuthGuard)
 @Controller('user')
 export class UserController {
-    constructor(private userService: UserService){}
+    constructor(private prisma: PrismaService,private userService: UserService){}
 
     @UseGuards(JwtGuard)
     @Get('/')
@@ -32,9 +33,26 @@ export class UserController {
     }
     @UseGuards(JwtGuard)
     @Post('add_friend/:friend_name')
-    add_friend(@Req() req, @Param() param, @Res() res){
-        return this.userService.add_friend(req.user_obj, param.friend_name, res);
+     async  add_friend(@Req() req, @Param() param, @Res() res){
+        const new_user = await this.prisma.user.findUnique({
+            where: {
+                id : req.user_obj.id
+            },
+        })
+        return this.userService.add_friend(new_user, param.friend_name, res);
     }
+    @UseGuards(JwtGuard)
+    @Get('user/:whichone')
+    async get_which_one(@Req() req, @Param() param, @Res() res)
+    {
+        const new_user = await this.prisma.user.findUnique({
+            where: {
+                id : req.user_obj.id
+            },
+        })
+        return this.userService.get_which_friend(new_user, param.whichone ,res);
+    }
+
 
     @UseGuards(JwtGuard)
     @Post('upload/')
@@ -63,11 +81,10 @@ export class UserController {
 
     @UseGuards(JwtGuard)
     @Get('user')
-    get_user(@Req() req, @Res() res){
+    get_user(@Query() query, @Req() req, @Res() res){     
         return this.userService.get_user_all(req.user_obj, res);
     }
-
-
+ 
     @UseGuards(JwtGuard)
     @Get('user_score')
     get_user_score(@Req() req, @Res() res){

@@ -19,6 +19,8 @@ const swagger_1 = require("@nestjs/swagger");
 const class_validator_1 = require("class-validator");
 const auth_service_1 = require("./auth.service");
 const swagger_2 = require("@nestjs/swagger");
+const prisma_service_1 = require("../prisma/prisma.service");
+const config_1 = require("@nestjs/config");
 class Update2faDto {
 }
 __decorate([
@@ -28,18 +30,31 @@ __decorate([
     __metadata("design:type", String)
 ], Update2faDto.prototype, "twofasecret", void 0);
 let AuthController = class AuthController {
-    constructor(authService) {
+    constructor(prisma, config, authService) {
+        this.prisma = prisma;
+        this.config = config;
         this.authService = authService;
     }
     login(req, res) {
         return this.authService.login(req, res);
     }
     async generate_qr_code(req, res) {
-        const { otpauthUrl } = await this.authService.generate_2fa_secret(req.user_obj, res);
+        const new_user = await this.prisma.user.findUnique({
+            where: {
+                id: req.user_obj.id
+            },
+        });
+        const { otpauthUrl } = await this.authService.generate_2fa_secret(new_user, res);
         return (this.authService.pipeQrCodeStream(res, otpauthUrl));
     }
-    disable_2fa(req, res) {
-        return this.authService.disable_2fa(req.user_obj, res);
+    async disable_2fa(req, res) {
+        const new_user = await this.prisma.user.findUnique({
+            where: {
+                id: req.user_obj.id
+            },
+        });
+        console.log(JSON.stringify(new_user));
+        return this.authService.disable_2fa(new_user, res);
     }
     verify_2fa(req, res, param) {
         return this.authService.verify_2fa(req, res, param);
@@ -70,7 +85,7 @@ __decorate([
     __param(1, (0, common_1.Res)()),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [Object, Object]),
-    __metadata("design:returntype", void 0)
+    __metadata("design:returntype", Promise)
 ], AuthController.prototype, "disable_2fa", null);
 __decorate([
     (0, common_1.UseGuards)(guard_1.JwtGuard),
@@ -85,7 +100,7 @@ __decorate([
 AuthController = __decorate([
     (0, swagger_2.ApiTags)('auth'),
     (0, common_1.Controller)('auth'),
-    __metadata("design:paramtypes", [auth_service_1.AuthService])
+    __metadata("design:paramtypes", [prisma_service_1.PrismaService, config_1.ConfigService, auth_service_1.AuthService])
 ], AuthController);
 exports.AuthController = AuthController;
 //# sourceMappingURL=auth.controller.js.map

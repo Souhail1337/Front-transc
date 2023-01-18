@@ -3,7 +3,7 @@ import { ConfigService } from "@nestjs/config";
 import { JwtService } from "@nestjs/jwt";
 import { authenticator } from "otplib";
 import { PrismaService } from "src/prisma/prisma.service";
-import { UserStatus } from "@prisma/client";
+import { User, UserStatus } from "@prisma/client";
 
 import { toDataURL } from 'qrcode';
 import { toFileStream } from 'qrcode';
@@ -84,7 +84,7 @@ export class AuthService {
         }
     }
 
-    async generate_2fa_secret(user: UserDto, @Res() res)
+    async generate_2fa_secret(user: User, @Res() res)
     {
         if (await this.prisma.user.findUnique({
             where:{
@@ -104,7 +104,7 @@ export class AuthService {
             throw new HttpException("User not found!", 400);
         }
     }
-    async save_secret_db(user: UserDto, secret : string) {
+    async save_secret_db(user: User, secret : string) {
         const updated_user = await this.prisma.user.update({
             where: {id: user.id },
             data: {
@@ -116,10 +116,14 @@ export class AuthService {
         return toFileStream(res, otpauthUrl);
     }
 
-    async enable_2fa(user: UserDto, @Res() res){
+    async enable_2fa(user: User, @Res() res){
         try{
+            console.log("50 cent " + user.is_two_fa_enable);
             if (user.is_two_fa_enable === true)
+            {
+                console.log("ALREADY ENABLE AZEBI");
                 res.json({message :"2fa is already enabled!"});
+            }    
             else{
                 const updated_user = await this.prisma.user.update({
                     where: {id: user.id },
@@ -133,11 +137,14 @@ export class AuthService {
             throw new HttpException("Failed to enable 2fa!", 400);
         }
     }
-    async disable_2fa(user: UserDto, @Res() res){
+    async disable_2fa(user: User, @Res() res){
         try{
+          console.log("nizar l3azi : "+ user.username + " zbi " + user.is_two_fa_enable);
             if (user.is_two_fa_enable === false)
+            {
                 res.json({message :"2fa is already disabled!"});
-            else{
+            }
+                else{
                 const updated_user = await this.prisma.user.update({
                     where: {id: user.id },
                         data: {

@@ -20,7 +20,6 @@ const otplib_1 = require("otplib");
 const prisma_service_1 = require("../prisma/prisma.service");
 const client_1 = require("@prisma/client");
 const qrcode_1 = require("qrcode");
-const dto_1 = require("../user/dto");
 const class_validator_1 = require("class-validator");
 const swagger_1 = require("@nestjs/swagger");
 class Update2faDto {
@@ -127,8 +126,11 @@ let AuthService = class AuthService {
     }
     async enable_2fa(user, res) {
         try {
-            if (user.is_two_fa_enable === true)
+            console.log("50 cent " + user.is_two_fa_enable);
+            if (user.is_two_fa_enable === true) {
+                console.log("ALREADY ENABLE AZEBI");
                 res.json({ message: "2fa is already enabled!" });
+            }
             else {
                 const updated_user = await this.prisma.user.update({
                     where: { id: user.id },
@@ -144,8 +146,10 @@ let AuthService = class AuthService {
     }
     async disable_2fa(user, res) {
         try {
-            if (user.is_two_fa_enable === false)
+            console.log("nizar l3azi : " + user.username + " zbi " + user.is_two_fa_enable);
+            if (user.is_two_fa_enable === false) {
                 res.json({ message: "2fa is already disabled!" });
+            }
             else {
                 const updated_user = await this.prisma.user.update({
                     where: { id: user.id },
@@ -199,7 +203,7 @@ __decorate([
 __decorate([
     __param(1, (0, common_1.Res)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [dto_1.UserDto, Object]),
+    __metadata("design:paramtypes", [Object, Object]),
     __metadata("design:returntype", Promise)
 ], AuthService.prototype, "generate_2fa_secret", null);
 __decorate([
@@ -211,13 +215,13 @@ __decorate([
 __decorate([
     __param(1, (0, common_1.Res)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [dto_1.UserDto, Object]),
+    __metadata("design:paramtypes", [Object, Object]),
     __metadata("design:returntype", Promise)
 ], AuthService.prototype, "enable_2fa", null);
 __decorate([
     __param(1, (0, common_1.Res)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [dto_1.UserDto, Object]),
+    __metadata("design:paramtypes", [Object, Object]),
     __metadata("design:returntype", Promise)
 ], AuthService.prototype, "disable_2fa", null);
 __decorate([

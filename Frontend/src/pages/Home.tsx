@@ -5,7 +5,8 @@ import { TbAdjustmentsHorizontal } from "react-icons/tb";
 import Leaderboard from "../components/Home/Leaderboard";
 import MyGames from "../components/Home/MyGames";
 import Achievments from "../components/Home/Achievments";
-
+import Searchbar from "../components/Searchbar";
+import bookdata from "./bookdata.json"
 const Home = () => {
   return (
     <div>
@@ -14,7 +15,7 @@ const Home = () => {
         {/* ------- search input -------- */}
         <div className="w-[593px] h-[52px] flex">
           <span className="bg-[#E8E8E8] px-[30px] rounded-l-[10px] flex justify-center items-center cursor-pointer">
-            <FiSearch className="text-[#7B7B7B] text-[1.5rem]" />
+            <Searchbar />
           </span>
           <input
             className="grow h-[100%] bg-[#E8E8E8] text-[#7B7B7B] text-[14px]"
