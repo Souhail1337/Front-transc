@@ -6,6 +6,7 @@ import axios from 'axios';
 import Modal from "react-modal";
 import Checkbox from "./Checkbox";
 import { Usercontext } from "../context/Usercontext";
+import Swal from 'sweetalert2'
 
 
 type DataType = {
@@ -15,23 +16,66 @@ type DataType = {
 const Settings = ({ state }: { state: boolean }) => {
   const [isChecked, setIsChecked] = useState<boolean>(state);
   const [twoFactorModal, setModal] = useState<boolean>(false);
-
-    const [User, GetUser] = useState("")
-    const [avatar, NewAvatar] = useState('');
-    const handleModal = async () => {
+  const [User, GetUser] = useState("")
+  const [avatar, NewAvatar] = useState('');
+  const [Username, setUsername] = useState("");
+  const handleModal = async () => {
       console.log("sanfrasisco : " + isChecked);
       if (!isChecked) {
         console.log("wash true or fals : " + twoFactorModal);
         setModal(true);
         return;}
       }
+
+    const handleDisable = async (e: any) =>
+    {
+      e.preventDefault();
+      console.log("fass fass " + isChecked);
+      const url1= "http://localhost:5000/auth/login/2fa/disable";
+      let response = await axios.post(url1,isChecked ,
+      {
+        withCredentials: true,
+      }).then((res) =>{
+        Swal.fire(
+  'Good job!',
+  'You clicked the button!',
+  'success'
+)
+
+      }).catch(err => {
+        Swal.fire({
+          icon: 'error',
+          title: 'Oops...',
+          text: '2FA Already Disabled',
+          footer: '<Link to={"/"} Why do I have this issue? Probably because Baghi t7esselna</Link>'
+        })
+        
+      });
+      // if (!isChecked)
+      // {
+      //   console.log("clicked here");
+      //   await axios.post('http://localhost:5000/auth/login/2fa/disable',{withCredentials: true})
+      //  .then(res => {
+      //   window.alert("haheho");
+      //   setIsChecked(false);
+      //  }).catch(err=> {
+      //    window.alert("azbii already disabled ");
+      //    console.log("error : " +err);
+      //  })
+      // }
+      // else
+      //   window.alert("already disable hehe");
+    
+    }
     axios.get('http://localhost:5000/user/user', {withCredentials: true})
     .then(res => {
-      GetUser(res.data.username);
+      GetUser(res.data.full_name);
       NewAvatar(res.data.avatar);
+      setUsername(res.data.username);
     }).catch(err=> {
       console.log(err)
     })
+   
   return (
     <div className="w-[1021px] min-h-screen">
       <h1 className="text-[77px] text-[#F2F2F2] text-center font-[700] tracking-wider">
@@ -54,7 +98,7 @@ const Settings = ({ state }: { state: boolean }) => {
                 {User}
               </h1>
               <h6 className="text-[#828282] text-[20px] tracking-wider">
-                @Poma3
+                {Username}
               </h6>
             </div>
           </div>
@@ -65,6 +109,7 @@ const Settings = ({ state }: { state: boolean }) => {
         </div>
         {/* ------ bottom part ------ */}
         <div className="mt-[144px] flex items-center gap-[44px]">
+        <div>
         <Checkbox onClick={handleModal} name="isTwoFactor" id="two-factor" checked={isChecked}>
           Two Factor Authentication
         </Checkbox>
@@ -74,6 +119,13 @@ const Settings = ({ state }: { state: boolean }) => {
           contentLabel="SCAN QR CODE"
           setTwoFactor={setIsChecked}
           />
+          <br/>
+          </div>
+          <div>
+          <button onClick={handleDisable} name="disable">
+            Disable Two-Fa-Authentificatios.<br/> "Only Click Here if You Are Already Enabled this Feature"
+          </button>
+          </div>
         </div>
       </div>
     </div>

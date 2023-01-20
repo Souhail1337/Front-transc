@@ -142,6 +142,8 @@ export class AuthService {
           console.log("nizar l3azi : "+ user.username + " zbi " + user.is_two_fa_enable);
             if (user.is_two_fa_enable === false)
             {
+
+                throw new HttpException("2FA is Already Disabled",400);
                 res.json({message :"2fa is already disabled!"});
             }
                 else{
@@ -155,6 +157,7 @@ export class AuthService {
             }
         }
         catch{
+            if (user.is_two_fa_enable === false)
             throw new HttpException("Failed to disable 2fa!", 400);
         }
     }

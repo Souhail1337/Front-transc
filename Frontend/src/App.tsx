@@ -20,7 +20,6 @@ function App() {
   .then((response) =>
   {
     setState(response.data);
-   
   })
 },[])
 console.log("ayoub zab : " + state.is_two_fa_enable);
@@ -37,6 +36,7 @@ console.log("ayoub zab : " + state.is_two_fa_enable);
         <Route path='/watch/*' element={<Spectator />} />
         <Route path='/login' element={<Login/>} />
         <Route path ='/errornotfound' element={<Nofriendpage/>}/>
+              
        </Route>
       </Routes>
     </>

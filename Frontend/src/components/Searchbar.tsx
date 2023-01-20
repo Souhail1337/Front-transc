@@ -4,10 +4,9 @@ import "./styles.css"
 import {AiOutlineSearch} from 'react-icons/ai'
 import "./Sb.css"
 import { Navigate ,useNavigate} from 'react-router-dom'
-type props = {
-  placeholder:string;
-  data: Array<any>;
-}
+
+
+
 const Searchbar = () => {
   const [value, setValue] = useState("");
   const navigate = useNavigate();

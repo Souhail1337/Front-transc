@@ -4,7 +4,7 @@ import React, { useState } from "react";
 const DisplayName = (props : any) => {
     const token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjUzOTIxIiwiaWF0IjoxNjczNDgxMDkzLCJleHAiOjE2NzM1Njc0OTN9.dyBDDlnX81D8Hmb6Sj7znPq3j8D62cx2RCYmW47satw"
     const [newUsername, SetNewUsername] = useState('');
-    const url3 = "http://localhost:5000/user/edit_username/"
+    const url3 = "http://localhost:5000/user/edit_full_name/"
     const handleSubmit = async (e:React.FormEvent<HTMLFormElement>) =>
     {
       e.preventDefault();

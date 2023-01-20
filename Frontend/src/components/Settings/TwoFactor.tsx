@@ -39,7 +39,6 @@ const TwoFactor: FC<Props>= ({isOpen, setIsOpen, contentLabel, setTwoFactor}) =>
         if (statusCode === 200) {
           setTwoFactor(true);
           setIsOpen(false);
-          console.log("hahahahahahahahahahhahahaha");
           toast.success("Two factor authentication has been enabled");
           setError("");
         } else ;
@@ -87,6 +86,10 @@ const TwoFactor: FC<Props>= ({isOpen, setIsOpen, contentLabel, setTwoFactor}) =>
       <div className="absolute top-0 translate-y-[-50%]">
         <button className="w-fit bg-[#B7ABFF] px-[30px] py-[5px] text-[#202020] text-[24px] font-[500] rounded-[10px]">
           Two Factor Authentication
+        </button>
+        <br/>
+        <button className="flex">
+          Disable Two-fa, Only Click if You are Already Enabled This Feature 
         </button>
       </div>
     </div>
