@@ -14,7 +14,7 @@ const Sidebar = () => {
   const [off, setoff] = useState(false);
   const handle_logout = () =>{
     setoff(true);
-    let res = axios.post('http://localhost:5000/user/logout', off,  {withCredentials: true})
+    let res = axios.post('http://localhost:5000/user/logout', {off}, {withCredentials: true})
     .then(response => {
       window.alert("You have logged out !see You later")
       navigate("/login");
@@ -55,12 +55,12 @@ const Sidebar = () => {
             </span>
             <span className="text-[18px]">Chat</span>
           </li>
-          <li onClick={() => navigate("/addfriend")} 
+          <li onClick={() => navigate("/friends")} 
           className="flex items-center gap-[14px] cursor-pointer">
             <span className="text-[24px]">
               <BiHeart />
             </span>
-            <span className="text-[18px]">Add friends</span>
+            <span className="text-[18px]">friends</span>
           </li>
           <li
             onClick={() => navigate("/profile")}

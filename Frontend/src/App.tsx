@@ -32,7 +32,7 @@ console.log("ayoub zab : " + state.is_two_fa_enable);
         <Route index element={<Home />} />
         <Route path="/profile/*" element={<Profile/>} />
         <Route path='/settings' element={<Settings state={state.is_two_fa_enable }/>} />
-        <Route path='/Addfriend' element={<Addfriend/>} />
+        <Route path='/friends' element={<Addfriend/>} />
         <Route path='/game' element={<SketchPong/>} />
         <Route path='/watch/*' element={<Spectator />} />
         <Route path='/login' element={<Login/>} />
