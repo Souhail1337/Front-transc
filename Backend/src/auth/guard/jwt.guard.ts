@@ -1,4 +1,4 @@
-import { Injectable, CanActivate, ExecutionContext } from '@nestjs/common';
+import { Injectable, CanActivate, ExecutionContext, HttpException, HttpStatus } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import { Observable } from 'rxjs';
@@ -10,15 +10,13 @@ export class JwtGuard implements CanActivate {
         const verifyOptions = { secret: this.config.get('JWT_SECRET') };
         const request = context.switchToHttp().getRequest();
         const jwt_token = request.cookies['access_token'];
-        console.log('req', request);
         try{
             const user_obj = this.jwtService.verify(jwt_token, verifyOptions);
             request.user_obj = user_obj;
-            console.log('user', user_obj)
             return user_obj ? true : false;
         }
         catch{
-            throw ("Invalid Access Token!");
+            throw new HttpException("Invalid access token!", HttpStatus.UNAUTHORIZED);
         }
     }
 }

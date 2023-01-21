@@ -32,8 +32,6 @@ async function bootstrap() {
   const document = SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('api', app, document);
 
-  
-
 app.useGlobalInterceptors(new VersionHeaderInterceptor());
 app.enableCors({
   origin: 'http://localhost:3000',

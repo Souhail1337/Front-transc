@@ -1,49 +1,33 @@
-import { Body, HttpException, Injectable, Param, Req, Res } from "@nestjs/common";
+import { HttpException, Injectable, Param, Req, Res } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
 import { JwtService } from "@nestjs/jwt";
 import { authenticator } from "otplib";
 import { PrismaService } from "src/prisma/prisma.service";
-import { User, UserStatus } from "@prisma/client";
+import { UserStatus } from "@prisma/client";
 
 import { toDataURL } from 'qrcode';
 import { toFileStream } from 'qrcode';
 import { throwError } from "rxjs";
 import { UserDto } from "src/user/dto";
-import { IsString, IsNotEmpty } from 'class-validator';
-
-import { ApiProperty, ApiTags } from '@nestjs/swagger';
-class Update2faDto{
-	@ApiProperty()
-	@IsString()
-	@IsNotEmpty()
-	twofasecret: string;
-}
 @Injectable({})
 export class AuthService {
-    constructor(private prisma: PrismaService, private config: ConfigService, private jwt: JwtService){
+    constructor(private prisma: PrismaService, private config: ConfigService, private jwt: JwtService) {
     }
-    
-    async login(@Req() req, @Res() res){
-        try{
-            
+
+    async login(@Req() req, @Res() res) {
+        try {
             const payload = {
                 id: req.user.id,
             };
-            console.log("zabiiii" + this.prisma.user.count({
-                where:{
-                    id: req.user.id,
-                }
-            }));
-            const nb_user : number = await this.prisma.user.count({
-                where:{
+            const nb_user: number = await this.prisma.user.count({
+                where: {
                     id: req.user.id,
                 }
             });
-            const zero : number = 0;
-            
-            if (nb_user === 0){
+            const zero: number = 0;
+            if (nb_user === 0) {
                 const user = await this.prisma.user.create({
-                    data : {
+                    data: {
                         id: req.user.id,
                         full_name: req.user.full_name,
                         username: req.user.username,
@@ -51,7 +35,7 @@ export class AuthService {
                         is_two_fa_enable: false,
                         email: req.user.email,
                         status: UserStatus.ON,
-                        win : 0,
+                        win: 0,
                         lose: 0,
                         score: 0,
                         win_streak: 0,
@@ -59,133 +43,138 @@ export class AuthService {
                 });
                 const secret = this.config.get('JWT_SECRET');
                 const access_token = await this.jwt.sign(payload, {
-                    expiresIn : '1d',
-                    secret : secret,
+                    expiresIn: '1d',
+                    secret: secret,
                 });
                 res.cookie('access_token', access_token, { httpOnly: true }).status(200);
-                res.json({message :"success!"});
+                // res.json({message :"success!"});
+                req.res.redirect(this.config.get('LOCAL_URL'));
             }
-            else if (nb_user === 1){
-                  const secret = this.config.get('JWT_SECRET');
-                  const access_token = await this.jwt.sign(payload, {
-                      expiresIn : '1d',
-                      secret : secret,
-                  });
-                req.res.cookie('access_token', access_token, {
-                    httpOnly: true,
-                    path: '/',
+            else if (nb_user === 1) {
+                const user = await this.prisma.user.findUnique({
+                    where: {
+                        id: req.user.id,
+                    }
                 });
-                req.res.redirect(`http://localhost:3000/`);
+                const secret = this.config.get('JWT_SECRET');
+                const access_token = await this.jwt.sign(payload, {
+                    expiresIn: '1d',
+                    secret: secret,
+                });
+                res.cookie('access_token', access_token, { httpOnly: true }).status(200);
+                // res.send(access_token);
+                // res.json({message :"success!"});
+                if (user.is_two_fa_enable === true)
+                    req.res.redirect(this.config.get('LOCAL_URL') + "verify_2fa");
+                else
+                    req.res.redirect(this.config.get('LOCAL_URL'));
+
+                await this.prisma.user.update({
+                    where: { id: user.id },
+                    data: {
+                        status: UserStatus.ON,
+                    }
+                });
             }
         }
-        catch(error){
-            console.log("my error uis "+error);
+        catch {
             throw new HttpException("Login failed!", 400);
         }
     }
 
-    async generate_2fa_secret(user: User, @Res() res)
-    {
-        if (await this.prisma.user.findUnique({
-            where:{
-                id : user.id,
-            }
-        })){
-            this.enable_2fa(user, res);
-            const secret = authenticator.generateSecret();            
-            const otpauthUrl : string = authenticator.keyuri(user.email, this.config.get('TWO_FACTOR_AUTHENTICATION_APP_NAME'), secret);
-            this.save_secret_db(user, secret);
+    async generate_2fa_secret(user: UserDto, @Res() res) {
+        console.table(user);
+        try {
+            const secret = authenticator.generateSecret();
+            const otpauthUrl: string = authenticator.keyuri(user.email, this.config.get('TWO_FACTOR_AUTHENTICATION_APP_NAME'), secret);
+            await this.save_secret_db(user, secret);
+            await this.prisma.user.update({
+                where: { id: user.id },
+                data: {
+                    is_two_fa_enable: true,
+                }
+            });
             return ({
                 secret,
                 otpauthUrl
             })
         }
-        else{
-            throw new HttpException("User not found!", 400);
+        catch {
+            throw new HttpException("Error bad request", 400);
         }
     }
-    async save_secret_db(user: User, secret : string) {
-        const updated_user = await this.prisma.user.update({
-            where: {id: user.id },
+
+    async save_secret_db(user, secret: string) {
+        await this.prisma.user.update({
+            where: { id: user.id },
             data: {
                 two_fa_code: secret,
             }
-          });
+        });
     }
-    async pipeQrCodeStream(@Res() res, otpauthUrl: string) {
+
+    async generate_qr_code(user_obj, @Res() res) {
+        const { otpauthUrl } = await this.generate_2fa_secret(user_obj, res);
         return toFileStream(res, otpauthUrl);
     }
 
-    async enable_2fa(user: User, @Res() res){
-        try{
-            console.log("50 cent " + user.is_two_fa_enable);
-            if (user.is_two_fa_enable === true)
-            {
-                console.log("ALREADY ENABLE AZEBI");
-                res.json({message :"2fa is already enabled!"});
-            }    
-            else{
-                const updated_user = await this.prisma.user.update({
-                    where: {id: user.id },
-                    data: {
-                        is_two_fa_enable: true,
-                    }
-                  });
-            }
-        }
-        catch{
-            throw new HttpException("Failed to enable 2fa!", 400);
-        }
-    }
-    async disable_2fa(user: User, @Res() res){
-        try{
-          console.log("nizar l3azi : "+ user.username + " zbi " + user.is_two_fa_enable);
-            if (user.is_two_fa_enable === false)
-            {
+    // async enable_2fa(user, @Res() res) {
+    //     if (user) {
+    //         try {
+    //             await this.prisma.user.update({
+    //                 where: { id: user.id },
+    //                 data: {
+    //                     is_two_fa_enable: true,
+    //                 }
+    //             });
+    //         }
+    //         catch {
+    //             throw new HttpException("Failed to enable 2fa!", 400);
+    //         }
+    //     }
+    // }
 
-                throw new HttpException("2FA is Already Disabled",400);
-                res.json({message :"2fa is already disabled!"});
+    async disable_2fa(user_req: UserDto, @Res() res) {
+        try {
+            const user = await this.get_user(user_req.id);
+            // console.log(user, user.is_two_fa_enable);
+
+            if (user.is_two_fa_enable === false) {
+                throw new HttpException("2FA Already Disabled!", 400);
+                //   res.json({message :"2fa is already disabled!"});
             }
-                else{
+            else {
                 const updated_user = await this.prisma.user.update({
-                    where: {id: user.id },
-                        data: {
+                    where: { id: user.id },
+                    data: {
                         is_two_fa_enable: false,
                     }
-                  });
-                  res.json({message :"success!"});
+                });
+                res.json({ message: "success!" });
             }
         }
-        catch{
-            if (user.is_two_fa_enable === false)
+        catch {
             throw new HttpException("Failed to disable 2fa!", 400);
         }
     }
-    async verify_2fa(@Req() req, @Res() res,@Param() param){
-        console.log("3fa dkhl");
+    async verify_2fa(@Req() req, @Res() res, @Param() param) {
+
         const user = await this.get_user(req.user_obj.id);
-        if (user.is_two_fa_enable === false){
+        if (user.is_two_fa_enable === false) {
             throw new HttpException("2fa is not enable!", 400);
         }
-        const is_2fa_code_valid =  authenticator.verify({
-            token: param.two_fa_code ,
+        const is_2fa_code_valid = authenticator.verify({
+            token: param.two_fa_code,
             secret: user.two_fa_code,
         });
-        console.log("zabi  ="+ param.two_fa_code);
-        console.log("zebi 2 = " + user.two_fa_code);
         if (!is_2fa_code_valid)
-        {
-            console.log("code ghalet");
             throw new HttpException("Invalid 2fa code!", 400);
-          
-        }else
-          console.log("code sa7i7 " + user.two_fa_code);
-        res.json({message :"2fa code is valid!"});
+        res.json({ message: "2fa code is valid!" });
     }
-    async get_user(req_id: string){
+    async get_user(req_id: string) {
         const user = await this.prisma.user.findUnique({
-            where:{
-                id : req_id,
+            where: {
+                id: req_id,
             }
         });
         return user;
